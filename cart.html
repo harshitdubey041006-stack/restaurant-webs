@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanakkam Cart</title>
+<link rel="stylesheet" href="style.css">
+<style>
+body{font-family:sans-serif;background:#f9f5f0;margin:0;padding:0;}
+.navbar{border:2px solid transparent;border-radius:2px;height:70px;background-color:rgb(194,141,72);display:flex;align-items:center;justify-content:space-evenly;position: sticky; top:0;}
+.navbar a{text-decoration:none;color:black;}
+.navbar .van-logo{height:50px;width:60px;background-image:url('Vanakkam_logo_imresizer.jpg');background-size:cover;border-radius:50%;}
+.cart-container{padding:20px;}
+.cart-table{width:100%;border-collapse:collapse;margin-top:20px;}
+.cart-table th, .cart-table td{border:1px solid #ddd;padding:10px;text-align:center;}
+.cart-table th{background:#c28d48;color:white;}
+input[type="number"]{width:60px;}
+button{padding:8px 12px;background:#c28d48;color:white;border:none;border-radius:5px;cursor:pointer;}
+button:hover{background:#b07b3a;}
+.coupon-section{margin-top:20px;}
+.total-section{margin-top:20px;font-size:18px;font-weight:bold;}
+</style>
+</head>
+<body>
+
+<div class="navbar">
+    <div class="van-logo"></div>
+    <a href="index.html">Home</a>
+    <a href="menu.html">Menu</a>
+    <a href="shop.html">Shop</a>
+    <a href="service.html">Service</a>
+    <a href="cart.html">Cart</a>
+</div>
+
+<h1 style="text-align:center;margin-top:20px;">Your Cart</h1>
+
+<div class="cart-container">
+    <table class="cart-table" id="cart-table">
+        <tr>
+            <th>Item</th>
+            <th>Price</th>
+            <th>Qty</th>
+            <th>Subtotal</th>
+            <th>Remove</th>
+        </tr>
+    </table>
+
+    <div class="coupon-section">
+        <input type="text" id="coupon" placeholder="Enter coupon code">
+        <button onclick="applyCoupon()">Apply Coupon</button>
+        <p id="coupon-msg"></p>
+    </div>
+
+    <div class="total-section">
+        Total: ₹<span id="total">0</span>
+    </div>
+
+    <button onclick="placeOrder()">Place Order</button>
+</div>
+
+<script>
+let cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+const cartTable = document.getElementById('cart-table');
+const totalEl = document.getElementById('total');
+const couponMsg = document.getElementById('coupon-msg');
+let discountApplied = false;
+
+function renderCart(){
+    cartTable.innerHTML = `
+    <tr>
+        <th>Item</th>
+        <th>Price</th>
+        <th>Qty</th>
+        <th>Subtotal</th>
+        <th>Remove</th>
+    </tr>`;
+    let total = 0;
+    cart.forEach((item, idx)=>{
+        const subtotal = item.price * item.quantity;
+        total += subtotal;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.name}</td>
+            <td>₹${item.price}</td>
+            <td><input type="number" value="${item.quantity}" min="1" onchange="updateQty(${idx}, this.value)"></td>
+            <td>₹${subtotal}</td>
+            <td><button onclick="removeItem(${idx})">Remove</button></td>
+        `;
+        cartTable.appendChild(row);
+    });
+    if(discountApplied){
+        total = total * 0.9;
+    }
+    totalEl.textContent = total.toFixed(2);
+}
+renderCart();
+
+function updateQty(idx, val){
+    cart[idx].quantity = parseInt(val);
+    localStorage.setItem('cartItems', JSON.stringify(cart));
+    renderCart();
+}
+
+function removeItem(idx){
+    cart.splice(idx,1);
+    localStorage.setItem('cartItems', JSON.stringify(cart));
+    renderCart();
+}
+
+function applyCoupon(){
+    const code = document.getElementById('coupon').value.trim();
+    if(code.toUpperCase() === "VANAKKAM10" && !discountApplied){
+        discountApplied = true;
+        couponMsg.textContent = "Coupon applied! 10% off.";
+    } else if(discountApplied){
+        couponMsg.textContent = "Coupon already applied.";
+    } else{
+        couponMsg.textContent = "Invalid coupon.";
+    }
+    renderCart();
+}
+
+function placeOrder(){
+    if(cart.length === 0){
+        alert("Your cart is empty!");
+        return;
+    }
+    // Simulate order placement
+    alert("Order placed successfully! Owner will be notified.");
+    // Clear cart
+    cart = [];
+    localStorage.removeItem('cartItems');
+    renderCart();
+}
+</script>
+
+</body>
+</html>
